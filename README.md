@@ -11,6 +11,7 @@ To complete this assignment on GitHub Codespaces:
 Your changes will then be available to the teaching team to look at.
 
 Once you have finished the notebook(s):
+
     1. Create a new notebook in your portfolio repository
     2. Concisely duplicate your analysis in a location and time of your choosing (i.e. only include the code needed to generate the main plot you make)
     3. Add a headline and description discussing your results
