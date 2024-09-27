@@ -1,6 +1,9 @@
 [![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=16193589)
 # Species Distribution Coding Challenge
 
+See further information at
+[Mapping Migration](https://cu-esiil-edu.github.io/esiil-learning-portal/foundations/notebooks/03-species-distribution/species-distribution.html) textbook chapter.
+
 To complete this assignment on GitHub Codespaces:
 
     1. Open the notebooks in GitHub Codespaces by clicking the Code button > Codespaces tab > Open new Codespace on main
