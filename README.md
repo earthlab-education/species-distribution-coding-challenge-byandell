@@ -30,3 +30,8 @@ jupyter nbconvert <your-notebook-name>.ipynb --to markdown --no-input
 ```
 
 You can run it within your notebook as a `%%bash` cell, or in the terminal.
+
+See successful work of 
+
+- [Lauren Alexandra](https://github.com/lauren-alexandra/lauren-alexandra.github.io/tree/main/willow-flycatcher-distribution)
+- [Lauren Gleason](https://github.com/earthlab-education/species-distribution-coding-challenge-brglea)
