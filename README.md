@@ -35,3 +35,4 @@ See successful work of
 
 - [Lauren Alexandra](https://github.com/lauren-alexandra/lauren-alexandra.github.io/tree/main/willow-flycatcher-distribution)
 - [Lauren Gleason](https://github.com/earthlab-education/species-distribution-coding-challenge-brglea)
+- [Nolan Welsh](https://github.com/earthlab-education/species-distribution-coding-challenge-npwelsh/blob/main/notebooks/sandhill-crane-migration-portfolio-post.ipynb)
