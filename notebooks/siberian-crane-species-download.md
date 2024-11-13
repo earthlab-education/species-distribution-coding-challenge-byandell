@@ -1,43 +1,51 @@
-# Access locations and times of Veery encounters
+# Access locations and times of Siberian Crane encounters
 
-For this challenge, you will use a database called the [Global
-Biodiversity Information Facility (GBIF)](https://www.gbif.org/). GBIF
-is compiled from species observation data all over the world, and
+For this challenge, you the
+[Global Biodiversity Information Facility (GBIF)](https://www.gbif.org/).
+GBIF is compiled from species observation data all over the world, and
 includes everything from museum specimens to photos taken by citizen
 scientists in their backyards.
 
-<link rel="stylesheet" type="text/css" href="./assets/styles.css"><div class="callout callout-style-default callout-titled callout-task"><div class="callout-header"><div class="callout-icon-container"><i class="callout-icon"></i></div><div class="callout-title-container flex-fill">Try It: Explore GBIF</div></div><div class="callout-body-container callout-body"><p>Before your get started, go to the <a
-href="https://www.gbif.org/occurrence/search">GBIF occurrences search
-page</a> and explore the data.</p></div></div>
-
-> **Contribute to open data**
->
-> You can get your own observations added to GBIF using
-> [iNaturalist](https://www.inaturalist.org/)!
-
 ### Set up your code to prepare for download
 
-We will be getting data from a source called [GBIF (Global Biodiversity
-Information Facility)](https://www.gbif.org/). We need a package called
+We need a package called
 `pygbif` to access the data, which may not be included in your
-environment. Install it by running the cell below:
+environment. 
 
-<link rel="stylesheet" type="text/css" href="./assets/styles.css"><div class="callout callout-style-default callout-titled callout-task"><div class="callout-header"><div class="callout-icon-container"><i class="callout-icon"></i></div><div class="callout-title-container flex-fill">Try It: Import packages</div></div><div class="callout-body-container callout-body"><p>In the imports cell, we’ve included some packages that you will need.
-Add imports for packages that will help you:</p>
-<ol type="1">
-<li>Work with reproducible file paths</li>
-<li>Work with tabular data</li>
-</ol></div></div>
+Import packages that will help you:
 
-    /opt/conda/lib/python3.11/site-packages/dask/dataframe/__init__.py:42: FutureWarning: 
-    Dask dataframe query planning is disabled because dask-expr is not installed.
-    
-    You can install it with `pip install dask[dataframe]` or `conda install dask`.
-    This will raise in a future version.
-    
-      warnings.warn(msg, FutureWarning)
+- Work with reproducible file paths
+- Work with tabular data
 
+```{python}
+import time
+import zipfile
+from getpass import getpass
+from glob import glob
 
+import os
+import pathlib
+
+from getpass import getpass
+from glob import glob
+
+import geopandas as gpd
+import pandas as pd
+
+import pygbif.occurrences as occ
+import pygbif.species as species
+
+# get month names
+import calendar
+
+# libraries for Dynamic mapping
+import geoviews as gv
+import hvplot.pandas
+import cartopy
+import cartopy.crs as ccrs
+import panel as pn
+pn.extension()
+```
 
 <script type="esms-options">{"shimMode": true}</script><style>*[data-root-id],
 *[data-root-id] > * {
