@@ -1042,7 +1042,7 @@ migration_plot.save('siberian-crane-years.html', embed=True)
 migration_plot
 ```
 
-(Code for embedded HTML below)
+(Code for embedded `siberian-crane-years.html` below)
 
 <embed type="text/html" src="siberian-crane-years.html" width="1200" height="600">
 
