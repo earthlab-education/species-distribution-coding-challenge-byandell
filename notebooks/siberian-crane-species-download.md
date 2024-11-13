@@ -181,19 +181,6 @@ gbif_df.head()
 ```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -267,23 +254,24 @@ gbif_df.head()
 
 ## Convert GBIF data to a GeoDataFrame by Month
 
+This includes also `year` as we have records over multiple years.
 
+```{python}
+gdf_monthly = (
+    gpd.GeoDataFrame(
+        gbif_df, 
+        geometry=gpd.points_from_xy(
+            gbif_df.decimalLongitude, 
+            gbif_df.decimalLatitude), 
+        crs="EPSG:4326")
+    # Select the desired columns
+    [['month', 'year', 'geometry']]
+)
 
+gdf_monthly
+```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -371,32 +359,54 @@ gbif_df.head()
 <p>2870 rows × 3 columns</p>
 </div>
 
-
-
 ### Download and save ecoregion boundaries
 
 Ecoregions represent boundaries formed by biotic and abiotic conditions: geology, landforms, soils, vegetation, land use, wildlife, climate, and hydrology.
 
+```{python}
+# Set up the ecoregion boundary URL
+ecoregions_url = "https://storage.googleapis.com/teow2016/Ecoregions2017.zip"
+
+# Set up a path to save the data on your machine
+ecoregions_dir = os.path.join(data_dir, 'wwf_ecoregions')
+
+# Make the ecoregions directory
+os.makedirs(ecoregions_dir, exist_ok=True)
+
+# Join ecoregions shapefile path
+ecoregions_path = os.path.join(ecoregions_dir, 'wwf_ecoregions.shp')
+
+# Only download once
+if not os.path.exists(ecoregions_path):
+    ecoregions_gdf = gpd.read_file(ecoregions_url)
+    ecoregions_gdf.to_file(ecoregions_path)
+```
+
+```{python}
+%%bash
+find ~/earth-analytics/data/species -name '*.shp'
+```
+
+```
     /home/jovyan/earth-analytics/data/species/wwf_ecoregions/wwf_ecoregions.shp
+```
 
+```{python}
+# Open up the ecoregions boundaries
+ecoregions_gdf = (
+    gpd.read_file(ecoregions_path)
+    .rename(columns={
+        'ECO_NAME': 'name',
+        'SHAPE_AREA': 'area'})
+    [['name', 'area', 'geometry']]
+)
 
-
-
+# Name the index so it will match the other data later on
+ecoregions_gdf.index.name = 'ecoregion'
+ecoregions_gdf
+```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -484,31 +494,36 @@ Ecoregions represent boundaries formed by biotic and abiotic conditions: geology
 <p>847 rows × 3 columns</p>
 </div>
 
+```{python}
+%store ecoregions_gdf gdf_monthly
+```
 
-
+```
     Stored 'ecoregions_gdf' (GeoDataFrame)
     Stored 'gdf_monthly' (GeoDataFrame)
-
+```
 
 Identify the ecoregion for each observation
 
-
-
+```{python}
+gbif_ecoregion_gdf = (
+    ecoregions_gdf
+    # Match the coordinate reference system of the GBIF data and the ecoregions
+    # transform geometries to a new coordinate reference system
+    .to_crs(gdf_monthly.crs)
+    # Find ecoregion for each observation
+    # spatial join
+    .sjoin(
+        gdf_monthly,
+        how='inner', 
+        predicate='contains')
+    # Select the required columns
+    [['month', 'year', 'name']]
+)
+gbif_ecoregion_gdf
+```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -600,125 +615,54 @@ Identify the ecoregion for each observation
 
 Count the observations in each ecoregion each year and month
 
+```{python}
+def get_yearly_regional_observations(df, region_type, occurrence_name):
 
+    # Filter out early observation
+    df = df[df['year'] > 1960]
 
+    occurrence_df = (
+        df
+        # For each region, for each month...
+        .groupby([region_type, 'year'])
+        # count the number of occurrences
+        .agg(occurrences=(occurrence_name, 'count'))
+    )
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+    # Get rid of rare observations (possible misidentification)
+    occurrence_df = occurrence_df[occurrence_df["occurrences"] > 1]
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+    # Take the mean by region
+    mean_occurrences_by_region = (
+        occurrence_df
+        .groupby([region_type])
+        .mean()
+    )
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-      <th>occurrences</th>
-      <th>norm_occurrences</th>
-    </tr>
-    <tr>
-      <th>ecoregion</th>
-      <th>month</th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>5</th>
-      <th>3.0</th>
-      <td>2</td>
-      <td>0.100000</td>
-    </tr>
-    <tr>
-      <th rowspan="2" valign="top">24</th>
-      <th>5.0</th>
-      <td>6</td>
-      <td>0.166667</td>
-    </tr>
-    <tr>
-      <th>9.0</th>
-      <td>2</td>
-      <td>0.166667</td>
-    </tr>
-    <tr>
-      <th>53</th>
-      <th>3.0</th>
-      <td>9</td>
-      <td>0.100000</td>
-    </tr>
-    <tr>
-      <th>74</th>
-      <th>1.0</th>
-      <td>3</td>
-      <td>0.016949</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th rowspan="2" valign="top">758</th>
-      <th>5.0</th>
-      <td>20</td>
-      <td>0.141093</td>
-    </tr>
-    <tr>
-      <th>6.0</th>
-      <td>16</td>
-      <td>0.067725</td>
-    </tr>
-    <tr>
-      <th rowspan="3" valign="top">802</th>
-      <th>1.0</th>
-      <td>4</td>
-      <td>0.022599</td>
-    </tr>
-    <tr>
-      <th>2.0</th>
-      <td>3</td>
-      <td>0.026810</td>
-    </tr>
-    <tr>
-      <th>12.0</th>
-      <td>2</td>
-      <td>0.013863</td>
-    </tr>
-  </tbody>
-</table>
-<p>78 rows × 2 columns</p>
-</div>
+    # Take the mean by year
+    mean_occurrences_by_year = (
+        occurrence_df
+        .groupby(['year'])
+        .mean()
+    )
 
+    # Normalize by space and time for sampling effort
+    # This accounts for the number of active observers in each location and time of year
+    occurrence_df['norm_occurrences'] = (
+        occurrence_df
+        / mean_occurrences_by_region
+        / mean_occurrences_by_year
+    )
 
+    return occurrence_df
+```
 
-
-
+```{python}
+occurrence_year_df = get_yearly_regional_observations(gbif_ecoregion_gdf, 'ecoregion', 'name')
+occurrence_year_df
+```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -801,16 +745,18 @@ Count the observations in each ecoregion each year and month
 <p>135 rows × 2 columns</p>
 </div>
 
+Plot to check distributions 
 
+```{python}
+occurrence_year_df.reset_index().plot.scatter(
+    x='year', y='norm_occurrences', c='ecoregion',
+    logy=True
+)
+```
 
-
-
-
+```
     <Axes: xlabel='year', ylabel='norm_occurrences'>
-
-
-
-
+```
     
 ![png](siberian-crane-species-download_files/siberian-crane-species-download_33_1.png)
     
