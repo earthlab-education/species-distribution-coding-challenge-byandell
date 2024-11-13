@@ -503,7 +503,7 @@ ecoregions_gdf
     Stored 'gdf_monthly' (GeoDataFrame)
 ```
 
-Identify the ecoregion for each observation
+### Identify the ecoregion for each observation
 
 ```{python}
 gbif_ecoregion_gdf = (
@@ -611,9 +611,7 @@ gbif_ecoregion_gdf
 <p>2205 rows × 3 columns</p>
 </div>
 
-
-
-Count the observations in each ecoregion each year and month
+### Count the observations in each ecoregion each year and month
 
 ```{python}
 def get_yearly_regional_observations(df, region_type, occurrence_name):
@@ -745,7 +743,7 @@ occurrence_year_df
 <p>135 rows × 2 columns</p>
 </div>
 
-Plot to check distributions 
+### Plot to check distributions 
 
 ```{python}
 occurrence_year_df.reset_index().plot.scatter(
@@ -759,28 +757,24 @@ occurrence_year_df.reset_index().plot.scatter(
 ```
     
 ![png](siberian-crane-species-download_files/siberian-crane-species-download_33_1.png)
-    
 
+### Create a simplified GeoDataFrame for plot
 
-Create a simplified GeoDataFrame for plot
+Streamlining plotting with hvplot by simplifying the geometry, projecting it to a Mercator projection that is compatible with
+geoviews, and cropping off areas in the Arctic.
 
+```{python}
+# Speed up processing
+ecoregions_gdf.geometry = ecoregions_gdf.simplify(
+    .1, preserve_topology=False)
 
+# Change the CRS to Mercator for mapping
+ecoregions_gdf = ecoregions_gdf.to_crs(ccrs.Mercator())
 
+ecoregions_gdf
+```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -868,35 +862,24 @@ Create a simplified GeoDataFrame for plot
 <p>847 rows × 3 columns</p>
 </div>
 
+### Mapping annual distribution
 
+```{python}
+# Join the occurrences with the plotting GeoDataFrame
+occurrence_gdf = ecoregions_gdf.join(occurrence_year_df[['norm_occurrences']])
 
-    Stored 'gbif_path' (str)
-    calendar	 cartopy	 ccrs	 credentials	 data_dir	 ecoregions_dir	 ecoregions_gdf	 ecoregions_path	 ecoregions_url	 
-    env_variable	 first_result	 gbif_df	 gbif_dir	 gbif_ecoregion_gdf	 gbif_path	 gbif_pattern	 gdf_monthly	 get_monthly_regional_observations	 
-    get_yearly_regional_observations	 getpass	 glob	 gpd	 gv	 hvplot	 occ	 occurrence_month_df	 occurrence_year_df	 
-    os	 pathlib	 pd	 pn	 prompt_func	 prompt_text	 reset_credentials	 species	 species_info	 
-    species_key	 time	 zipfile	 
+# Get the plot bounds so they don't change with the slider
+xmin, ymin, xmax, ymax = occurrence_gdf.total_bounds
 
-
-Mapping monthly distribution
-
-
-
+# Define the slider widget
+slider = pn.widgets.DiscreteSlider(
+    name='year', 
+    options={i: i for i in range(1970, 2024)}
+)
+occurrence_gdf
+```
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1005,28 +988,59 @@ Mapping monthly distribution
 <p>135 rows × 4 columns</p>
 </div>
 
+```{python}
+%store occurrence_gdf
+```
 
-
+```
     Stored 'occurrence_gdf' (GeoDataFrame)
+```
 
+```{python}
+occurrence_gdf.hvplot(
+    c='norm_occurrences',
+    groupby='year',
+    # Use background tiles
+    title='Siberian Crane Over Years',
+    #geo=True, 
+    crs=ccrs.Mercator(), 
+    tiles='CartoLight',
+    xlim=(xmin, xmax), ylim=(ymin, ymax),
+    frame_height=600,
+    frame_width=1400,
+    colorbar=False,
+    widgets={'year': slider},
+    widget_location='bottom',
+    width=500,
+    height=500
+)
 
+# Plot occurrence by ecoregion and year
+migration_plot = (
+    occurrence_gdf
+    .hvplot(
+        c='norm_occurrences',
+        groupby='year',
+        # Use background tiles
+        title = first_result['species'] + 'Siberian Crane over Years',
+        #geo=True, 
+        #crs=ccrs.Mercator(), 
+        tiles='CartoLight',
+        xlim=(xmin, xmax), ylim=(ymin, ymax),
+        frame_height=600,
+        frame_width=1400,
+        colorbar=False,
+        widgets={'year': slider},
+        widget_location='bottom'
+    )
+)
 
+# Save the plot
+migration_plot.save('siberian-crane-years.html', embed=True)
 
+# Show the plot
+migration_plot
+```
 
-    BokehModel(combine_events=True, render_bundle={'docs_json': {'2b941de9-74b5-45fb-bd4f-44a4b3f3039b': {'version…
-
-
-
-                                                   
-
-    WARNING:W-1005 (FIXED_SIZING_MODE): 'fixed' sizing mode requires width and height to be set: figure(id='e565c90b-3e1c-4288-9d47-b6a7701154e7', ...)
-
-
-    
-
-
-
-
-    BokehModel(combine_events=True, render_bundle={'docs_json': {'5fc56a83-abe9-4ff0-b07f-4c26d84e4750': {'version…
-
+<embed type="text/html" src="siberian-crane-years.html" width="1200" height="600">
 
