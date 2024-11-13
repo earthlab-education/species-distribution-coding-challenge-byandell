@@ -47,132 +47,28 @@ import panel as pn
 pn.extension()
 ```
 
-<script type="esms-options">{"shimMode": true}</script><style>*[data-root-id],
-*[data-root-id] > * {
-  box-sizing: border-box;
-  font-family: var(--jp-ui-font-family);
-  font-size: var(--jp-ui-font-size1);
-  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
-}
+Create data directory in the home folder
 
-/* Override VSCode background color */
-.cell-output-ipywidget-background:has(
-    > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
-  ),
-.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
-  background-color: transparent !important;
-}
-</style>
+```{python}
+data_dir = os.path.join(
+    # Home directory
+    pathlib.Path.home(),
+    # Earth analytics data directory
+    'earth-analytics',
+    'data',
+    # Project directory
+    'species',
+)
+os.makedirs(data_dir, exist_ok=True)
 
+# Define the directory name for GBIF data
+gbif_dir = os.path.join(data_dir, 'gbif_siberian')
+gbif_dir
+```
 
-
-
-
-
-
-<div id='p1011'>
-  <div id="d4deb318-44cc-4e9b-b41e-1dde069212ba" data-root-id="p1011" style="display: contents;"></div>
-</div>
-<script type="application/javascript">(function(root) {
-  var docs_json = {"1a37f9ce-0f50-40e7-9130-04d9231f472b":{"version":"3.5.2","title":"Bokeh Application","roots":[{"type":"object","name":"panel.models.browser.BrowserInfo","id":"p1011"},{"type":"object","name":"panel.models.comm_manager.CommManager","id":"p1012","attributes":{"plot_id":"p1011","comm_id":"0cca1c2d449b4591a8fd724f8b4231fd","client_comm_id":"a5aeef464a63414a9d73f8eec9150dd4"}}],"defs":[{"type":"model","name":"ReactiveHTML1"},{"type":"model","name":"FlexBox1","properties":[{"name":"align_content","kind":"Any","default":"flex-start"},{"name":"align_items","kind":"Any","default":"flex-start"},{"name":"flex_direction","kind":"Any","default":"row"},{"name":"flex_wrap","kind":"Any","default":"wrap"},{"name":"gap","kind":"Any","default":""},{"name":"justify_content","kind":"Any","default":"flex-start"}]},{"type":"model","name":"FloatPanel1","properties":[{"name":"config","kind":"Any","default":{"type":"map"}},{"name":"contained","kind":"Any","default":true},{"name":"position","kind":"Any","default":"right-top"},{"name":"offsetx","kind":"Any","default":null},{"name":"offsety","kind":"Any","default":null},{"name":"theme","kind":"Any","default":"primary"},{"name":"status","kind":"Any","default":"normalized"}]},{"type":"model","name":"GridStack1","properties":[{"name":"mode","kind":"Any","default":"warn"},{"name":"ncols","kind":"Any","default":null},{"name":"nrows","kind":"Any","default":null},{"name":"allow_resize","kind":"Any","default":true},{"name":"allow_drag","kind":"Any","default":true},{"name":"state","kind":"Any","default":[]}]},{"type":"model","name":"drag1","properties":[{"name":"slider_width","kind":"Any","default":5},{"name":"slider_color","kind":"Any","default":"black"},{"name":"value","kind":"Any","default":50}]},{"type":"model","name":"click1","properties":[{"name":"terminal_output","kind":"Any","default":""},{"name":"debug_name","kind":"Any","default":""},{"name":"clears","kind":"Any","default":0}]},{"type":"model","name":"FastWrapper1","properties":[{"name":"object","kind":"Any","default":null},{"name":"style","kind":"Any","default":null}]},{"type":"model","name":"NotificationAreaBase1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0}]},{"type":"model","name":"NotificationArea1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"notifications","kind":"Any","default":[]},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0},{"name":"types","kind":"Any","default":[{"type":"map","entries":[["type","warning"],["background","#ffc107"],["icon",{"type":"map","entries":[["className","fas fa-exclamation-triangle"],["tagName","i"],["color","white"]]}]]},{"type":"map","entries":[["type","info"],["background","#007bff"],["icon",{"type":"map","entries":[["className","fas fa-info-circle"],["tagName","i"],["color","white"]]}]]}]}]},{"type":"model","name":"Notification","properties":[{"name":"background","kind":"Any","default":null},{"name":"duration","kind":"Any","default":3000},{"name":"icon","kind":"Any","default":null},{"name":"message","kind":"Any","default":""},{"name":"notification_type","kind":"Any","default":null},{"name":"_destroyed","kind":"Any","default":false}]},{"type":"model","name":"TemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"BootstrapTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"TemplateEditor1","properties":[{"name":"layout","kind":"Any","default":[]}]},{"type":"model","name":"MaterialTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"ReactiveESM1"},{"type":"model","name":"JSComponent1"},{"type":"model","name":"ReactComponent1"},{"type":"model","name":"AnyWidgetComponent1"},{"type":"model","name":"request_value1","properties":[{"name":"fill","kind":"Any","default":"none"},{"name":"_synced","kind":"Any","default":null},{"name":"_request_sync","kind":"Any","default":0}]}]}};
-  var render_items = [{"docid":"1a37f9ce-0f50-40e7-9130-04d9231f472b","roots":{"p1011":"d4deb318-44cc-4e9b-b41e-1dde069212ba"},"root_ids":["p1011"]}];
-  var docs = Object.values(docs_json)
-  if (!docs) {
-    return
-  }
-  const py_version = docs[0].version.replace('rc', '-rc.').replace('.dev', '-dev.')
-  async function embed_document(root) {
-    var Bokeh = get_bokeh(root)
-    await Bokeh.embed.embed_items_notebook(docs_json, render_items);
-    for (const render_item of render_items) {
-      for (const root_id of render_item.root_ids) {
-	const id_el = document.getElementById(root_id)
-	if (id_el.children.length && id_el.children[0].hasAttribute('data-root-id')) {
-	  const root_el = id_el.children[0]
-	  root_el.id = root_el.id + '-rendered'
-	  for (const child of root_el.children) {
-            // Ensure JupyterLab does not capture keyboard shortcuts
-            // see: https://jupyterlab.readthedocs.io/en/4.1.x/extension/notebook.html#keyboard-interaction-model
-	    child.setAttribute('data-lm-suppress-shortcuts', 'true')
-	  }
-	}
-      }
-    }
-  }
-  function get_bokeh(root) {
-    if (root.Bokeh === undefined) {
-      return null
-    } else if (root.Bokeh.version !== py_version) {
-      if (root.Bokeh.versions === undefined || !root.Bokeh.versions.has(py_version)) {
-	return null
-      }
-      return root.Bokeh.versions.get(py_version);
-    } else if (root.Bokeh.version === py_version) {
-      return root.Bokeh
-    }
-    return null
-  }
-  function is_loaded(root) {
-    var Bokeh = get_bokeh(root)
-    return (Bokeh != null && Bokeh.Panel !== undefined)
-  }
-  if (is_loaded(root)) {
-    embed_document(root);
-  } else {
-    var attempts = 0;
-    var timer = setInterval(function(root) {
-      if (is_loaded(root)) {
-        clearInterval(timer);
-        embed_document(root);
-      } else if (document.readyState == "complete") {
-        attempts++;
-        if (attempts > 200) {
-          clearInterval(timer);
-	  var Bokeh = get_bokeh(root)
-	  if (Bokeh == null || Bokeh.Panel == null) {
-            console.warn("Panel: ERROR: Unable to run Panel code because Bokeh or Panel library is missing");
-	  } else {
-	    console.warn("Panel: WARNING: Attempting to render but not all required libraries could be resolved.")
-	    embed_document(root)
-	  }
-        }
-      }
-    }, 25, root)
-  }
-})(window);</script>
-
-
-
-<script type="esms-options">{"shimMode": true}</script><style>*[data-root-id],
-*[data-root-id] > * {
-  box-sizing: border-box;
-  font-family: var(--jp-ui-font-family);
-  font-size: var(--jp-ui-font-size1);
-  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
-}
-
-/* Override VSCode background color */
-.cell-output-ipywidget-background:has(
-    > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
-  ),
-.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
-  background-color: transparent !important;
-}
-</style>
-
-
-
-
-
-
-
-
-
-    '/home/jovyan/earth-analytics/data/species/gbif_siberian'
-
-
-
-:::
+```
+'/home/jovyan/earth-analytics/data/species/gbif_siberian'
+```
 
 ### Register and log in to GBIF
 
@@ -180,97 +76,109 @@ You will need a [GBIF account](https://www.gbif.org/) to complete this
 challenge. You can use your GitHub account to authenticate with GBIF.
 Then, run the following code to save your credentials on your computer.
 
-> **Warning**
->
-> Your email address **must** match the email you used to sign up for
-> GBIF!
-
-> **Tip**
->
-> If you accidentally enter your credentials wrong, you can set
-> `reset_credentials=True` instead of `reset_credentials=False`.
+```{python}
+reset_credentials = False
+# GBIF needs a username, password, and email
+credentials = dict(
+    GBIF_USER=(input, 'username'),
+    GBIF_PWD=(getpass, 'password'),
+    GBIF_EMAIL=(input, 'email'),
+)
+for env_variable, (prompt_func, prompt_text) in credentials.items():
+    # Delete credential from environment if requested
+    if reset_credentials and (env_variable in os.environ):
+        os.environ.pop(env_variable)
+    # Ask for credential and save to environment
+    if not env_variable in os.environ:
+        os.environ[env_variable] = prompt_func(prompt_text)
+```
 
 ### Get the species key
 
-> ** Your task**
->
-> 1.  Replace the `species_name` with the name of the species you want
->     to look up
-> 2.  Run the code to get the species key
+```{python}
+# Query species
+species_info = species.name_lookup('grus leucogeranus', rank='SPECIES')
 
+# Get the first result
+first_result = species_info['results'][0]
 
+# Get the species key (nubKey)
+species_key = first_result['nubKey']
 
+# Check the result
+first_result['species'], species_key
+```
 
+```
     ('Grus leucogeranus', 2474961)
-
-
-
-
-
-
-    2474961
-
-
+```
 
 ### Download data from GBIF
 
-::: {.callout-task title=“Submit a request to GBIF”
+This gets _all_ data for Siberian Crane, since it is rare and endangered.
+Thus the `year` variable is dropped. Note that we can check progress at
+<https://www.gbif.org/user/download>.
 
-1.  Replace `csv_file_pattern` with a string that will match **any**
-    `.csv` file when used in the `glob` function. HINT: the character
-    `*` represents any number of any values except the file separator
-    (e.g. `/`)
+```{python}
+# Only download once
+gbif_pattern = os.path.join(gbif_dir, '*.csv')
+if not glob(gbif_pattern):
+    # Only submit one request
+    if not 'GBIF_DOWNLOAD_KEY' in os.environ:
+        # Submit query to GBIF
+        gbif_query = occ.download([
+            "speciesKey = " + str(species_key),
+            "hasCoordinate = TRUE",
+            #"year = 2023",
+        ])
+        os.environ['GBIF_DOWNLOAD_KEY'] = gbif_query[0]
 
-2.  Add parameters to the GBIF download function, `occ.download()` to
-    limit your query to:
+    # Wait for the download to build
+    download_key = os.environ['GBIF_DOWNLOAD_KEY']
+    wait = occ.download_meta(download_key)['status']
+    while not wait=='SUCCEEDED':
+        wait = occ.download_meta(download_key)['status']
+        time.sleep(5)
 
-    -   observations
-    -   from 2023
-    -   with spatial coordinates.
+    # Download GBIF data
+    download_info = occ.download_get(
+        os.environ['GBIF_DOWNLOAD_KEY'], 
+        path=data_dir)
 
-3.  Then, run the download. **This can take a few minutes**. :::
+    # Unzip GBIF data
+    with zipfile.ZipFile(download_info['path']) as download_zip:
+        download_zip.extractall(path=gbif_dir)
 
-    -   Can check progress at <https://www.gbif.org/user/download>.
+# Find the extracted .csv file path (take the first result)
+gbif_path = glob(gbif_pattern)[0]
+```
 
-
-
-
-    'speciesKey =2474961'
-
-
-
+```
 download key is 0020917-241007104925546
-GBIF.org (17 October 2024) GBIF Occurrence Download https://doi.org/10.15468/dl.4d3k48
+GBIF.org (17 October 2024) GBIF Occurrence Download
+<https://doi.org/10.15468/dl.4d3k48>
+```
 
+```{python}
+gbif_path
+```
 
-
-
+```
     '/home/jovyan/earth-analytics/data/species/gbif_siberian/0002798-241024112534372.csv'
-
-
+```
 
 ### Load the GBIF data into Python
 
-<link rel="stylesheet" type="text/css" href="./assets/styles.css"><div class="callout callout-style-default callout-titled callout-task"><div class="callout-header"><div class="callout-icon-container"><i class="callout-icon"></i></div><div class="callout-title-container flex-fill">Try It: Load GBIF data</div></div><div class="callout-body-container callout-body"><ol type="1">
-<li>Look at the beginning of the file you downloaded using the code
-below. What do you think the <strong>delimiter</strong> is?</li>
-<li>Run the following code cell. What happens?</li>
-<li>Uncomment and modify the parameters of <code>pd.read_csv()</code>
-below until your data loads successfully and you have only the columns
-you want.</li>
-</ol></div></div>
-
-You can use the following code to look at the beginning of your file:
-
-I copied from <https://github.com/lauren-alexandra/lauren-alexandra.github.io/blob/main/willow-flycatcher-distribution/willow-flycatcher-distribution.ipynb>
-and Lauren Gleason
-
-    gbifID	datasetKey	occurrenceID	kingdom	phylum	class	order	family	genus	species	infraspecificEpithet	taxonRank	scientificName	verbatimScientificName	verbatimScientificNameAuthorship	countryCode	locality	stateProvince	occurrenceStatus	individualCount	publishingOrgKey	decimalLatitude	decimalLongitude	coordinateUncertaintyInMeters	coordinatePrecision	elevation	elevationAccuracy	depth	depthAccuracy	eventDate	day	month	year	taxonKey	speciesKey	basisOfRecord	institutionCode	collectionCode	catalogNumber	recordNumber	identifiedBy	dateIdentified	license	rightsHolder	recordedBy	typeStatus	establishmentMeans	lastInterpreted	mediaType	issue
-    985829831	4fa7b334-ce0d-4e88-aaae-2e0c138d049e	URN:catalog:CLO:EBIRD:OBS131267733	Animalia	Chordata	Aves	Gruiformes	Gruidae	Grus	Grus leucogeranus		SPECIES	Leucogeranus leucogeranus (Pallas, 1773)	Leucogeranus leucogeranus		IN	Bharatpur--Keoladeo Ghana NP	Rajasthan	PRESENT	7	e2e717bf-551a-4917-bdc9-4fa0f342c530	27.161905	77.5228							1991-02-03	3	2	1991	9531123	2474961	HUMAN_OBSERVATION	CLO	EBIRD	OBS131267733				CC_BY_4_0		obsr280577			2024-04-17T08:23:51.075Z		CONTINENT_DERIVED_FROM_COORDINATES;TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED
-
-
-
-
+```{python}
+gbif_df = pd.read_csv(
+    gbif_path, 
+    delimiter='\t',
+    index_col='gbifID',
+    on_bad_lines='skip',
+    usecols=['gbifID', 'month', 'year', 'countryCode', 'stateProvince', 'decimalLatitude', 'decimalLongitude']
+)
+gbif_df.head()
+```
 
 <div>
 <style scoped>
@@ -356,8 +264,6 @@ and Lauren Gleason
   </tbody>
 </table>
 </div>
-
-
 
 ## Convert GBIF data to a GeoDataFrame by Month
 
