@@ -235,7 +235,7 @@ def join_ecoregions_monthly(ecoregions_gdf, monthly_gdf):
         ecoregions_gdf
         # Match the coordinate reference system of the GBIF data and the ecoregions
         # transform geometries to a new coordinate reference system
-        .to_crs(gdf_monthly.crs)
+        .to_crs(monthly_gdf.crs)
         # Find ecoregion for each observation
         # spatial join
         .sjoin(
