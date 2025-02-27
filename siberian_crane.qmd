@@ -40,39 +40,21 @@ Add imports for packages that will help you:
 - Work with reproducible file paths
 - Work with tabular data
 
-```python
-#| highlight: true
-import time
-import zipfile
-from getpass import getpass
-from glob import glob
-
-import os
-import pathlib
-
-from getpass import getpass
-from glob import glob
-
-import geopandas as gpd
-import pandas as pd
-
-import pygbif.occurrences as occ
-import pygbif.species as species
-
-# get month names
-import calendar
-
-# libraries for Dynamic mapping
-import geoviews as gv
-import hvplot.pandas
-import cartopy
-import cartopy.crs as ccrs
-import panel as pn
-pn.extension()
-```
-
 ```{python}
 from landmapy.initial import create_data_dir, robust_code
+```
+
+For now, run `gbif.py`.
+Soon, incorporate it into `landmapy` package.
+
+```{python}
+# from landmapy.gbif import gbif_credentials, gbif_species_key
+# from landmapy.gbif import download_gbif, load_gbif, gbif_monthly
+# from landmapy.gbif import ecoregions, gbif_ecoregion
+# from landmapy.gbif import count_monthly_ecoregions, count_yearly_ecoregions
+# from landmapy.gbif import simplify_ecoregions_gdf, join_occurrence, hvplot_occurrence
+
+%run gbif.py
 ```
 
 ```{python}
@@ -81,13 +63,6 @@ robust_code()
 data_dir = create_data_dir('species')
 gbif_dir = create_data_dir('species/gbif_siberian')
 gbif_dir
-```
-
-For now, run `gbif.py`.
-Soon, incorporate it into `landmapy` package.
-
-```{python}
-%run gbif.py
 ```
 
 ### Register and log in to GBIF
