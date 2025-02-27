@@ -198,6 +198,48 @@ def get_monthly_regional_observations(df, region_type, occurrence_name):
 # occurrence_df = get_monthly_regional_observations(gbif_ecoregion_gdf, 'ecoregion', 'name')
 # occurrence_df.reset_index().plot.scatter(x='month', y='norm_occurrences', c='ecoregion', logy=True)
 
+def get_yearly_regional_observations(df, region_type, occurrence_name):
+
+    # Filter out early observation
+    df = df[df['year'] > 1960]
+
+    occurrence_df = (
+        df
+        # For each region, for each month...
+        .groupby([region_type, 'year'])
+        # count the number of occurrences
+        .agg(occurrences=(occurrence_name, 'count'))
+    )
+
+    # Get rid of rare observations (possible misidentification)
+    occurrence_df = occurrence_df[occurrence_df["occurrences"] > 1]
+
+    # Take the mean by region
+    mean_occurrences_by_region = (
+        occurrence_df
+        .groupby([region_type])
+        .mean()
+    )
+
+    # Take the mean by year
+    mean_occurrences_by_year = (
+        occurrence_df
+        .groupby(['year'])
+        .mean()
+    )
+
+    # Normalize by space and time for sampling effort
+    # This accounts for the number of active observers in each location and time of year
+    occurrence_df['norm_occurrences'] = (
+        occurrence_df
+        / mean_occurrences_by_region
+        / mean_occurrences_by_year
+    )
+
+    return occurrence_df
+
+# occurrence_df = get_yearly_regional_observations(gbif_ecoregion_gdf, 'ecoregion', 'name')
+
 def simplify_ecoregions_gdf(ecoregions_gdf):
     """
     Create a simplified GeoDataFrame for plot.
