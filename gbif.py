@@ -1,4 +1,29 @@
+"""
+GBIF Functions.
+
+gbif_credentials: Set up GBIF Credentials
+gbif_species_key: Get GBIF Species Key
+download_gbif: Download GBIF Entries as CSV file (only once)
+load_gbif: Load the GBIF data
+gbif_monthly: Extract monthly data as gdf
+ecoregions: Get ecoregion boundary as gdf
+join_ecoregions_monthly: Join ecoregions with monthly gbif data for species
+count_monthly_ecoregions: Count the observations in each ecoregion each month
+count_yearly_ecoregions: Count the observations in each ecoregion each year
+simplify_ecoregions_gdf: Create a simplified GeoDataFrame for plot
+hvplot_occurrence: Holoviews map of monthly distribution
+"""
 def gbif_credentials(reset=False):
+    """
+    Set up GBIF Credentials.
+
+    Args:
+        reset (bool, optional): Reset credials if missing or True. Defaults to False.
+    Effects:
+        Set Environment Variables.
+    """
+    import os
+    
     reset_credentials = reset
     # GBIF needs a username, password, and email
     credentials = dict(
@@ -17,6 +42,17 @@ def gbif_credentials(reset=False):
 # gbif_credentials()
       
 def gbif_species_key(species = 'grus canadensis'):
+    """
+    Get GBIF Species Key.
+
+    Args:
+        species (str, optional): Name of species. Defaults to 'grus canadensis'.
+    Returns:
+        species_name (str): Name of species from first entry
+        species_key (int): GBIF species key
+    """
+    import pygbif.species as species
+
     # Query species
     species_info = species.name_lookup(species, rank='SPECIES')
 
@@ -29,11 +65,33 @@ def gbif_species_key(species = 'grus canadensis'):
     # Check the result
     return first_result['species'], species_key
 
-# my_species, species_key = gbif_species_key('grus canadensis')
+# species_name, species_key = gbif_species_key('grus canadensis')
 
-def download_gbif(data_dir, gbif_dir, species_key, year = 2023):
+def download_gbif(gbif_dir, species_key, year = 2023, unzip = False):
+    """
+    Download GBIF Entries as CSV file (only once).
+
+    Args:
+        gbif_dir (str): _description_
+        species_key (_type_): Species key
+        year (int, optional): Year. Defaults to 2023.
+        unzip (bool, optiona): Unzip CSV if True.
+    Returns:
+        gbif_path (str): GBIF data path
+    Effects:
+        Download data to gbif_dir
+    """
+    import os
+    from glob import glob
+    import pygbif.occurrences as occ
+    import zipfile
+    
+    if unzip:
+        gbif_pattern = os.path.join(gbif_dir, '*.csv')
+    else:
+        gbif_pattern = os.path.join(gbif_dir, '*.zip')
+
     # Only download once
-    gbif_pattern = os.path.join(gbif_dir, '*.csv')
     if not glob(gbif_pattern):
         # Only submit one request
         if not 'GBIF_DOWNLOAD_KEY' in os.environ:
@@ -55,11 +113,12 @@ def download_gbif(data_dir, gbif_dir, species_key, year = 2023):
         # Download GBIF data
         download_info = occ.download_get(
             os.environ['GBIF_DOWNLOAD_KEY'], 
-            path=data_dir)
+            path=gbif_dir)
 
-        # Unzip GBIF data
-        with zipfile.ZipFile(download_info['path']) as download_zip:
-            download_zip.extractall(path=gbif_dir)
+        if unzip:
+            # Unzip GBIF data
+            with zipfile.ZipFile(download_info['path']) as download_zip:
+                download_zip.extractall(path=gbif_dir)
 
     # Find the extracted .csv file path (take the first result)
     gbif_path = glob(gbif_pattern)[0]
@@ -69,7 +128,16 @@ def download_gbif(data_dir, gbif_dir, species_key, year = 2023):
 # gbif_path = download_gbif(gbif_dir, species_key)
 
 def load_gbif(gbif_path):
-    # Load the GBIF data
+    """
+    Load the GBIF data.
+
+    Args:
+        gbif_path (str): GBIF data path
+    Returns:
+        gbif_df (df): GBIF DataFrame for selected species
+    """
+    import pandas as pd
+    
     gbif_df = pd.read_csv(
         gbif_path, 
         delimiter='\t',
@@ -83,6 +151,16 @@ def load_gbif(gbif_path):
 # gbif_df.head()
 
 def gbif_monthly(gbif_df):
+    """
+    Extract monthly data as gdf
+
+    Args:
+        gbif_df (df): GBIF DataFrame for selected species
+    Returns:
+        monthly_gdf (gdf): GeoDataFrame of monthly data for species 
+    """
+    import geopandas as gpd
+
     monthly_gdf = (
         gpd.GeoDataFrame(
             gbif_df, 
@@ -99,10 +177,18 @@ def gbif_monthly(gbif_df):
 
 def ecoregions(data_dir):
     """
+    Get ecoregion boundary as gdf.
     
     Ecoregions represent boundaries formed by biotic and abiotic conditions:
     geology, landforms, soils, vegetation, land use, wildlife, climate, and hydrology.
+    
+    Args:
+        data_dir (str): Data directory name
+    Returns:
+        ecoregions_gdf (gdf): GeoDataFrame of ecoregions
     """
+    import os
+    import geopandas as gpd
 
     # Set up the ecoregion boundary URL
     ecoregions_url = "https://storage.googleapis.com/teow2016/Ecoregions2017.zip"
@@ -135,7 +221,16 @@ def ecoregions(data_dir):
 # ecoregions_gdf.plot(edgecolor='black', color='skyblue')
 # !find ~/earth-analytics/data/species -name '*.shp'
 
-def gbif_ecoregion(ecoregions_gdf, monthly_gdf):
+def join_ecoregions_monthly(ecoregions_gdf, monthly_gdf):
+    """
+    Join ecoregions with monthly gbif data for species.
+
+    Args:
+        ecoregions_gdf (gdf): GeoDataFrame of ecoregions
+        monthly_gdf (gdf): GeoDataFrame of monthly data for species
+    Returns:
+        gbif_ecoregion_gdf (gdf): GeoDataFrame for species
+    """
     gbif_ecoregion_gdf = (
         ecoregions_gdf
         # Match the coordinate reference system of the GBIF data and the ecoregions
@@ -154,14 +249,20 @@ def gbif_ecoregion(ecoregions_gdf, monthly_gdf):
 
 # gbif_ecoregion_gdf = gbif_ecoregion(ecoregions_gdf, monthly_gdf)
 
-
-def get_monthly_regional_observations(df, region_type, occurrence_name):
+def count_monthly_ecoregions(gbif_ecoregions_gdf, region_type = 'ecoregion', occurrence_name = 'name'):
     """
     Count the observations in each ecoregion each month.
+    
+    Args:
+        gbif_ecoregions_gdf (gdf): GeoDataFrame with raw occurrences
+        region_type (str, optional): Region type. Default 'ecoregion'.
+        occurrence_name (str, optional): Occurrence name. Default 'name'.
+    Returns:
+        occurrence_gdf (gdf): GeoDataFrame with occurrences by region.
     """
 
-    occurrence_df = (
-        df
+    occurrence_gdf = (
+        gbif_ecoregions_gdf
         # For each region, for each month...
         .groupby([region_type, 'month'])
         # count the number of occurrences
@@ -169,42 +270,53 @@ def get_monthly_regional_observations(df, region_type, occurrence_name):
     )
 
     # Get rid of rare observations (possible misidentification)
-    occurrence_df = occurrence_df[occurrence_df["occurrences"] > 1]
+    occurrence_gdf = occurrence_gdf[occurrence_gdf["occurrences"] > 1]
 
     # Take the mean by region
     mean_occurrences_by_region = (
-        occurrence_df
+        occurrence_gdf
         .groupby([region_type])
         .mean()
     )
 
     # Take the mean by month
     mean_occurrences_by_month = (
-        occurrence_df
+        occurrence_gdf
         .groupby(['month'])
         .mean()
     )
 
     # Normalize by space and time for sampling effort
     # This accounts for the number of active observers in each location and time of year
-    occurrence_df['norm_occurrences'] = (
-        occurrence_df
+    occurrence_gdf['norm_occurrences'] = (
+        occurrence_gdf
         / mean_occurrences_by_region
         / mean_occurrences_by_month
     )
 
-    return occurrence_df
+    return occurrence_gdf
 
-# occurrence_df = get_monthly_regional_observations(gbif_ecoregion_gdf, 'ecoregion', 'name')
-# occurrence_df.reset_index().plot.scatter(x='month', y='norm_occurrences', c='ecoregion', logy=True)
+# occurrence_gdf = count_monthly_ecoregions(gbif_ecoregions_gdf, 'ecoregion', 'name')
+# occurrence_gdf.reset_index().plot.scatter(x='month', y='norm_occurrences', c='ecoregion', logy=True)
 
-def get_yearly_regional_observations(df, region_type, occurrence_name):
+def count_yearly_ecoregions(gbif_ecoregions_gdf, region_type, occurrence_name, filter_year=1960):
+    """
+    Count the observations in each ecoregion each year.
+    
+    Args:
+        gbif_ecoregions_gdf (gdf): GeoDataFrame with raw occurrences
+        region_type (str, optional): Region type. Default 'ecoregion'.
+        occurrence_name (str, optional): Occurrence name. Default 'name'.
+    Returns:
+        occurrence_gdf (gdf): GeoDataFrame with occurrences by region.
+    """
 
-    # Filter out early observation
-    df = df[df['year'] > 1960]
+    if not filter_year is None:
+        # Filter out early observations.
+        gbif_ecoregions_gdf = gbif_ecoregions_gdf[gbif_ecoregions_gdf['year'] > filter_year]
 
-    occurrence_df = (
-        df
+    occurrence_gdf = (
+        gbif_ecoregions_gdf
         # For each region, for each month...
         .groupby([region_type, 'year'])
         # count the number of occurrences
@@ -212,33 +324,33 @@ def get_yearly_regional_observations(df, region_type, occurrence_name):
     )
 
     # Get rid of rare observations (possible misidentification)
-    occurrence_df = occurrence_df[occurrence_df["occurrences"] > 1]
+    occurrence_gdf = occurrence_gdf[occurrence_gdf["occurrences"] > 1]
 
     # Take the mean by region
     mean_occurrences_by_region = (
-        occurrence_df
+        occurrence_gdf
         .groupby([region_type])
         .mean()
     )
 
     # Take the mean by year
     mean_occurrences_by_year = (
-        occurrence_df
+        occurrence_gdf
         .groupby(['year'])
         .mean()
     )
 
     # Normalize by space and time for sampling effort
     # This accounts for the number of active observers in each location and time of year
-    occurrence_df['norm_occurrences'] = (
-        occurrence_df
+    occurrence_gdf['norm_occurrences'] = (
+        occurrence_gdf
         / mean_occurrences_by_region
         / mean_occurrences_by_year
     )
 
-    return occurrence_df
+    return occurrence_gdf
 
-# occurrence_df = get_yearly_regional_observations(gbif_ecoregion_gdf, 'ecoregion', 'name')
+# occurrence_gdf = count_yearly_ecoregions(gbif_ecoregion_gdf, 'ecoregion', 'name')
 
 def simplify_ecoregions_gdf(ecoregions_gdf):
     """
@@ -246,7 +358,14 @@ def simplify_ecoregions_gdf(ecoregions_gdf):
 
     Streamlining plotting with hvplot by simplifying the geometry, projecting it to a Mercator projection that is compatible with
     geoviews, and cropping off areas in the Arctic.
+    
+    Args:
+        ecoregions_gdf (gdf): GeoDataFrame of ecoregions
+    Returns:
+        ecoregions_gdf (gdf): GeoDataFrame of ecoregions
     """
+    import cartopy
+    import cartopy.crs as ccrs
 
     # Speed up processing
     ecoregions_gdf.geometry = ecoregions_gdf.simplify(
@@ -259,33 +378,42 @@ def simplify_ecoregions_gdf(ecoregions_gdf):
 
 # ecoregions_gdf = simplify_ecoregions_gdf(ecoregions_gdf)
 
-def join_occurrence(ecoregions_gdf, occurrence_df):
+def join_occurrence(ecoregions_gdf, occurrence_gdf):
     """
     Join Ecoregions and Occurrence.
 
     Args:
-        ecoregions_gdf (_type_): _description_
-        occurrence_df (_type_): _description_
+        ecoregions_gdf (gdf): GeoDataFrame of ecoregions
+        occurrence_gdf (gdf): GeoDataFrame of species occurrences
     Returns:
-        occurrence_gdf (gdf)
+        occurrence_gdf (gdf): GeoDataFrame of species occurrences
     """
 
     # Join the occurrences with the plotting GeoDataFrame
-    occurrence_gdf = ecoregions_gdf.join(occurrence_df[['norm_occurrences']])
+    occurrence_gdf = ecoregions_gdf.join(occurrence_gdf[['norm_occurrences']])
     return occurrence_gdf
 
-# occurrence_gdf = join_occurrence(ecoregions_gdf, occurrence_df)
+# occurrence_gdf = join_occurrence(ecoregions_gdf, occurrence_gdf)
 
 def hvplot_occurrence(occurrence_gdf):
     """
-    Mapping monthly distribution.
+    Holoviews map of monthly distribution.
 
     Args:
         occurrence_gdf (gdf): _description_
+    Returns:
+        occurrence_hvplot (hvplot): Holoviews plot of occurrence over time with slider
     """
+    import panel as pn
+    import hvplot.pandas
+    # CCRS commented out due to bad behavior.
+    # import cartopy
+    # import cartopy.crs as ccrs
 
     # Get the plot bounds so they don't change with the slider
     xmin, ymin, xmax, ymax = occurrence_gdf.total_bounds
+    
+    pn.extension()
 
     # Define the slider widget
     slider = pn.widgets.DiscreteSlider(
@@ -293,12 +421,12 @@ def hvplot_occurrence(occurrence_gdf):
         options={calendar.month_name[i]: i for i in range(1, 13)}
     )
     
-    migration_hvplot = occurrence_gdf.hvplot(
+    occurrence_hvplot = occurrence_gdf.hvplot(
         c='norm_occurrences',
         groupby='month',
         # Use background tiles
         title='Antigone canadensis Sandhill Crane Migration',
-        #geo=True, 
+        # geo=True, 
         # crs=ccrs.Mercator(), 
         tiles='CartoLight',
         xlim=(xmin, xmax), ylim=(ymin, ymax),
@@ -310,30 +438,6 @@ def hvplot_occurrence(occurrence_gdf):
         width=500,
         height=500
     )
-    return migration_hvplot
+    return occurrence_hvplot
 
-# migration_hvplot = hvplot_occurrence(occurrence_gdf)
-    
-def plot_occurrence(occurrence_gdf):
-    # Plot occurrence by ecoregion and month
-    migration_plot = (
-        occurrence_gdf
-        .hvplot(
-            c='norm_occurrences',
-            groupby='month',
-            # Use background tiles
-            title='Antigone canadensis Sandhill Crane Migration',
-            #geo=True, 
-            #crs=ccrs.Mercator(), 
-            tiles='CartoLight',
-            xlim=(xmin, xmax), ylim=(ymin, ymax),
-            frame_height=600,
-            frame_width=1400,
-            colorbar=False,
-            widgets={'month': slider},
-            widget_location='bottom'
-        )
-    )
-    return migration_plot
-
-# migration_plot = plot_occurrence(occurrence_gdf)
+# occurrence_hvplot = hvplot_occurrence(occurrence_gdf)
