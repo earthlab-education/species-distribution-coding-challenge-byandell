@@ -23,7 +23,8 @@ def gbif_credentials(reset=False):
         Set Environment Variables.
     """
     import os
-    
+    from getpass import getpass
+
     reset_credentials = reset
     # GBIF needs a username, password, and email
     credentials = dict(
@@ -41,7 +42,7 @@ def gbif_credentials(reset=False):
 
 # gbif_credentials()
       
-def gbif_species_key(species = 'grus canadensis'):
+def gbif_species_key(species_name = 'grus canadensis'):
     """
     Get GBIF Species Key.
 
@@ -54,7 +55,7 @@ def gbif_species_key(species = 'grus canadensis'):
     import pygbif.species as species
 
     # Query species
-    species_info = species.name_lookup(species, rank='SPECIES')
+    species_info = species.name_lookup(species_name, rank='SPECIES')
 
     # Get the first result
     first_result = species_info['results'][0]
@@ -67,7 +68,7 @@ def gbif_species_key(species = 'grus canadensis'):
 
 # species_name, species_key = gbif_species_key('grus canadensis')
 
-def download_gbif(gbif_dir, species_key, year = 2023, unzip = False):
+def download_gbif(gbif_dir, species_key, year = 2023, unzip = False, reset = False):
     """
     Download GBIF Entries as CSV file (only once).
 
@@ -76,6 +77,7 @@ def download_gbif(gbif_dir, species_key, year = 2023, unzip = False):
         species_key (_type_): Species key
         year (int, optional): Year. Defaults to 2023.
         unzip (bool, optiona): Unzip CSV if True.
+        reset (bool, optional): Reset download key if True.
     Returns:
         gbif_path (str): GBIF data path
     Effects:
@@ -84,6 +86,7 @@ def download_gbif(gbif_dir, species_key, year = 2023, unzip = False):
     import os
     from glob import glob
     import pygbif.occurrences as occ
+    import time
     import zipfile
     
     if unzip:
@@ -93,14 +96,19 @@ def download_gbif(gbif_dir, species_key, year = 2023, unzip = False):
 
     # Only download once
     if not glob(gbif_pattern):
+        if reset:
+            del os.environ['GBIF_DOWNLOAD_KEY']
         # Only submit one request
         if not 'GBIF_DOWNLOAD_KEY' in os.environ:
             # Submit query to GBIF
-            gbif_query = occ.download([
+            queries = [
                 f"speciesKey = {species_key}",
-                "hasCoordinate = TRUE",
-                f"year = {year}",
-            ])
+                "hasCoordinate = TRUE"
+            ]
+            if not year == None:
+                queries.append(f"year = {year}")
+
+            gbif_query = occ.download(queries)
             os.environ['GBIF_DOWNLOAD_KEY'] = gbif_query[0]
 
         # Wait for the download to build
@@ -169,7 +177,7 @@ def gbif_monthly(gbif_df):
                 gbif_df.decimalLatitude), 
             crs="EPSG:4326")
         # Select the desired columns
-        [['month', 'geometry']]
+        [['year', 'month', 'geometry']]
     )
     return monthly_gdf
 
@@ -243,7 +251,7 @@ def join_ecoregions_monthly(ecoregions_gdf, monthly_gdf):
             how='inner', 
             predicate='contains')
         # Select the required columns
-        [['month', 'name']]
+        [['year', 'month', 'name']]
     )
     return gbif_ecoregion_gdf
 
@@ -299,7 +307,7 @@ def count_monthly_ecoregions(gbif_ecoregions_gdf, region_type = 'ecoregion', occ
 # occurrence_gdf = count_monthly_ecoregions(gbif_ecoregions_gdf, 'ecoregion', 'name')
 # occurrence_gdf.reset_index().plot.scatter(x='month', y='norm_occurrences', c='ecoregion', logy=True)
 
-def count_yearly_ecoregions(gbif_ecoregions_gdf, region_type, occurrence_name, filter_year=1960):
+def count_yearly_ecoregions(gbif_ecoregions_gdf, region_type, occurrence_name):
     """
     Count the observations in each ecoregion each year.
     
@@ -310,10 +318,6 @@ def count_yearly_ecoregions(gbif_ecoregions_gdf, region_type, occurrence_name, f
     Returns:
         occurrence_gdf (gdf): GeoDataFrame with occurrences by region.
     """
-
-    if not filter_year is None:
-        # Filter out early observations.
-        gbif_ecoregions_gdf = gbif_ecoregions_gdf[gbif_ecoregions_gdf['year'] > filter_year]
 
     occurrence_gdf = (
         gbif_ecoregions_gdf
@@ -395,7 +399,7 @@ def join_occurrence(ecoregions_gdf, occurrence_gdf):
 
 # occurrence_gdf = join_occurrence(ecoregions_gdf, occurrence_gdf)
 
-def hvplot_occurrence(occurrence_gdf):
+def hvplot_occurrence(occurrence_gdf, unit='month'):
     """
     Holoviews map of monthly distribution.
 
@@ -405,6 +409,7 @@ def hvplot_occurrence(occurrence_gdf):
         occurrence_hvplot (hvplot): Holoviews plot of occurrence over time with slider
     """
     import panel as pn
+    import calendar
     import hvplot.pandas
     # CCRS commented out due to bad behavior.
     # import cartopy
@@ -416,14 +421,22 @@ def hvplot_occurrence(occurrence_gdf):
     pn.extension()
 
     # Define the slider widget
-    slider = pn.widgets.DiscreteSlider(
-        name='month', 
+    if unit == 'month':
         options={calendar.month_name[i]: i for i in range(1, 13)}
-    )
+    else: # 'year'
+        options=sorted(
+            occurrence_gdf
+            .index
+            .get_level_values('year')
+            .round()
+            .unique()
+            .astype(int))
+#        {i: i for i in range(1970, 2024)}
+    slider = pn.widgets.DiscreteSlider(name=unit, options=options)
     
     occurrence_hvplot = occurrence_gdf.hvplot(
         c='norm_occurrences',
-        groupby='month',
+        groupby=unit,
         # Use background tiles
         title='Antigone canadensis Sandhill Crane Migration',
         # geo=True, 
@@ -433,7 +446,7 @@ def hvplot_occurrence(occurrence_gdf):
         frame_height=600,
         frame_width=1400,
         colorbar=False,
-        widgets={'month': slider},
+        widgets={unit: slider},
         widget_location='bottom',
         width=500,
         height=500

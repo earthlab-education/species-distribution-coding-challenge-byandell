@@ -33,19 +33,21 @@ We need a package called `pygbif` to access the data,
 which may not be included in your environment.
 Install it by running the cell below:
 
-**Import packages:**
-In the imports cell, we’ve included some packages that you will need.
-Add imports for packages that will help you:
+```{python}
+# pip install pygbif
+```
 
-- Work with reproducible file paths
-- Work with tabular data
+```{python}
+# conda list pygbif
+```
+
+```{python}
+# pip install git+https://github.com/byandell-envsys/landmapy.git
+```
 
 ```{python}
 from landmapy.initial import create_data_dir, robust_code
 ```
-
-For now, run `gbif.py`.
-Soon, incorporate it into `landmapy` package.
 
 ```{python}
 # from landmapy.gbif import gbif_credentials, gbif_species_key
@@ -56,6 +58,13 @@ Soon, incorporate it into `landmapy` package.
 
 %run gbif.py
 ```
+
+**Import packages:**
+In the imports cell, we’ve included some packages that you will need.
+Add imports for packages that will help you:
+
+- Work with reproducible file paths
+- Work with tabular data
 
 ```{python}
 #| highlight: true
@@ -121,12 +130,15 @@ species_name, species_key
 :::
 
 ```{python}
-gbif_path = download_gbif(gbif_dir, species_key)
+gbif_path = download_gbif(gbif_dir, species_key, year=None)
 gbif_path
 ```
 
-download key is 0020917-241007104925546
-GBIF.org (17 October 2024) GBIF Occurrence Download https://doi.org/10.15468/dl.4d3k48
+```
+INFO:Your download key is 0001177-250227182400228
+INFO:Download file size: 171492 bytes
+INFO:On disk at /Users/brianyandell/earth-analytics/data/species/gbif_siberian/0001177-250227182400228.zip
+```
 
 ### Load the GBIF data into Python
 
@@ -147,7 +159,11 @@ and Lauren Gleason
 
 ```{python}
 gbif_df = load_gbif(gbif_path)
-gbif_df.head()
+print(gbif_df.head())
+```
+
+```{python}
+gbif_df['year'].value_counts()
 ```
 
 ## Convert GBIF data to a GeoDataFrame by Month
@@ -178,7 +194,7 @@ find ~/earth-analytics/data/species -name '*.shp'
 Identify the ecoregion for each observation
 
 ```{python}
-gbif_ecoregion_gdf = gbif_ecoregion(ecoregions_gdf, monthly_gdf)
+gbif_ecoregion_gdf = join_ecoregions_monthly(ecoregions_gdf, monthly_gdf)
 gbif_ecoregion_gdf
 ```
 
@@ -209,24 +225,15 @@ ecoregions_gdf = simplify_ecoregions_gdf(ecoregions_gdf)
 ecoregions_gdf
 ```
 
-```{python}
-%store gbif_path
-%who
-```
-
-Mapping monthly distribution
+Mapping yearly distribution
 
 ```{python}
-occurrence_gdf = join_occurrence(ecoregions_gdf, occurrence_gdf)
+occurrence_gdf = join_occurrence(ecoregions_gdf, occurrence_year_df)
 occurrence_gdf
 ```
 
 ```{python}
-%store occurrence_gdf
-```
-
-```{python}
-occurrence_hvplot = hvplot_occurrence(occurrence_gdf)
+occurrence_hvplot = hvplot_occurrence(occurrence_gdf, 'year')
 occurrence_hvplot
 ```
 

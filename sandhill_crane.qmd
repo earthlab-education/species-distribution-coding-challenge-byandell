@@ -34,27 +34,20 @@ Install it by running the cell below:
 
 
 ```{python}
-%%bash
-pip install pygbif
+# pip install pygbif
 ```
 
 ```{python}
-%conda list pygbif
+# conda list pygbif
 ```
 
-**Import packages:**
-In the imports cell, we’ve included some packages that you will need.
-Add imports for packages that will help you:
-
-- Work with reproducible file paths
-- Work with tabular data
+```{python}
+# pip install git+https://github.com/byandell-envsys/landmapy.git
+```
 
 ```{python}
 from landmapy.initial import create_data_dir, robust_code
 ```
-
-For now, run `gbif.py`.
-Soon, incorporate it into `landmapy` package.
 
 ```{python}
 # from landmapy.gbif import gbif_credentials, gbif_species_key
@@ -65,6 +58,16 @@ Soon, incorporate it into `landmapy` package.
 
 %run gbif.py
 ```
+
+**Import packages:**
+In the imports cell, we’ve included some packages that you will need.
+Add imports for packages that will help you:
+
+- Work with reproducible file paths
+- Work with tabular data
+
+For now, run `gbif.py`.
+Soon, incorporate it into `landmapy` package.
 
 ```{python}
 #| highlight: true
