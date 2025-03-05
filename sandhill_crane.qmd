@@ -50,13 +50,12 @@ from landmapy.initial import create_data_dir, robust_code
 ```
 
 ```{python}
-# from landmapy.gbif import gbif_credentials, gbif_species_key
-# from landmapy.gbif import download_gbif, load_gbif, gbif_monthly
-# from landmapy.gbif import ecoregions, gbif_ecoregion
-# from landmapy.gbif import count_monthly_ecoregions, count_yearly_ecoregions
-# from landmapy.gbif import simplify_ecoregions_gdf, join_occurrence, hvplot_occurrence
-
-%run gbif.py
+from landmapy.gbif import gbif_credentials, gbif_species_key
+from landmapy.gbif import download_gbif, load_gbif, gbif_monthly
+from landmapy.gbif import ecoregions, join_ecoregions_monthly
+from landmapy.gbif import count_monthly_ecoregions
+from landmapy.gbif import simplify_ecoregions_gdf, join_occurrence
+from landmapy.hvplot import hvplot_occurrence
 ```
 
 **Import packages:**
