@@ -34,26 +34,21 @@ which may not be included in your environment.
 Install it by running the cell below:
 
 ```{python}
-# pip install pygbif
+#| eval: false
+conda list pygbif
 ```
 
 ```{python}
-# conda list pygbif
-```
-
-```{python}
-# pip install git+https://github.com/byandell-envsys/landmapy.git
+#| eval: false
+pip install git+https://github.com/byandell-envsys/landmapy.git
 ```
 
 ```{python}
 from landmapy.initial import create_data_dir, robust_code
-```
-
-```{python}
 from landmapy.gbif import gbif_credentials, gbif_species_key
 from landmapy.gbif import download_gbif, load_gbif, gbif_monthly
 from landmapy.gbif import ecoregions, join_ecoregions_monthly
-from landmapy.gbif import count_monthly_ecoregions, count_yearly_ecoregions
+from landmapy.gbif import count_by_ecoregions
 from landmapy.gbif import simplify_ecoregions_gdf, join_occurrence
 from landmapy.hvplot import hvplot_occurrence
 ```
@@ -92,6 +87,7 @@ Then, run the following code to save your credentials on your computer.
 > Look to top of screen for entry of credentials.
 
 ```{python}
+#| eval: false
 gbif_credentials(False)
 ```
 
@@ -178,6 +174,7 @@ ecoregions_gdf.plot(edgecolor='black', color='skyblue')
 ```
 
 ```{python}
+#| eval: false
 %%bash
 find ~/earth-analytics/data/species -name '*.shp'
 ```
@@ -196,19 +193,21 @@ gbif_ecoregion_gdf
 Count the observations in each ecoregion each year and month
 
 ```{python}
-occurrence_month_df = count_monthly_ecoregions(gbif_ecoregion_gdf, 'ecoregion', 'name')
+occurrence_month_df = count_by_ecoregions(gbif_ecoregion_gdf,
+                        'ecoregion', 'name', 'month')
 occurrence_month_df
 ```
 
 ```{python}
-occurrence_year_df = count_yearly_ecoregions(gbif_ecoregion_gdf, 'ecoregion', 'name')
+occurrence_year_df = count_by_ecoregions(gbif_ecoregion_gdf,
+                        'ecoregion', 'name', 'year')
 occurrence_year_df
 ```
 
 ```{python}
 # plot to check distrubions 
 occurrence_year_df.reset_index().plot.scatter(
-    x='year', y='norm_occurrences', c='ecoregion',
+    x='year', y='occurrences', c='ecoregion',
     logy=True
 )
 ```
